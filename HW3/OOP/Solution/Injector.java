@@ -2,6 +2,9 @@ package OOP.Solution;
 
 import OOP.Provided.*;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -42,6 +45,17 @@ public class Injector {
     }
 
     public Object construct(Class<?> clazz) throws MultipleInjectConstructorsException, NoConstructorFoundException, NoSuitableProviderFoundException, MultipleProvidersException, MultipleAnnotationOnParameterException {
+        Method[] methods = clazz.getMethods();
+        Method[] injectMethods = Arrays.stream(methods).filter((m)->m.isAnnotationPresent(@inject));
+        if(injectMethods.length > 1) throw new MultipleInjectConstructorsException();
+        if(injectMethods.length == 0) {
+            try {
+                Constructor<?> constructor = clazz.getConstructor();
+                return constructor.newInstance();
+            } catch (Exception e) {
+                throw new NoConstructorFoundException();
+            }
+        }
 
         return null;
     }
