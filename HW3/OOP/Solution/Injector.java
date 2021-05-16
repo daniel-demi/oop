@@ -2,14 +2,12 @@ package OOP.Solution;
 
 import OOP.Provided.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -76,8 +74,43 @@ public class Injector {
         return null;
     }
 
-    private Object[] constructParameters(Parameter[] parameters) {
-        return new Object[0];
+    private Object[] constructParameters(Parameter[] parameters) throws MultipleInjectConstructorsException, NoSuitableProviderFoundException, NoConstructorFoundException, MultipleProvidersException, MultipleAnnotationOnParameterException {
+        List<Object> paramInst = new ArrayList<>();
+        for(Parameter p : parameters) {
+            Annotation[] annotations = p.getAnnotations();
+            if(annotations.length == 0) {
+                paramInst.add(construct(p.getClass()));
+            } else if (annotations.length > 1) {
+                throw new MultipleAnnotationOnParameterException();
+            } else {
+                if(p.isAnnotationPresent(Named.class)) {
+                    if(nameBindings.containsKey(p.getAnnotation(Named.class).name())) {
+                        paramInst.add(construct(nameBindings.get(p.getAnnotation(Named.class).name())));
+                        continue;
+                    }
+                }
+                Method provider = null;
+                for(Class<?> currentClass = getClass(); currentClass != Injector.class; currentClass = currentClass.getSuperclass()) {
+                    Method[] methods = currentClass.getMethods();
+                    for(Method m : methods) {
+                        if(m.isAnnotationPresent(annotations[0].getClass()) && m.isAnnotationPresent(Provides.class)) {
+                            if(m.getReturnType() == p.getType()) {
+                                if(provider != null) throw new MultipleProvidersException();
+                                provider = m;
+                            }
+                        }
+                    }
+                }
+                if(provider == null) throw new NoSuitableProviderFoundException();
+                provider.setAccessible(true);
+                try {
+                    paramInst.add(provider.invoke(this.getClass()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return paramInst.toArray();
     }
 }
 
