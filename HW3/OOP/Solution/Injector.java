@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import
 
 public class Injector {
     private final Map<Class<?>, Class<?>> classBindings;
@@ -66,17 +65,19 @@ public class Injector {
             }
         }
         if(actualConstructor == null) throw new NoConstructorFoundException();
-        Parameter[] parameters = actualConstructor.getParameters();
+        Object[] parameters = constructParameters(actualConstructor.getParameters());
         Method[] methods = actualClass.getMethods();
-        for (Parameter p : parameters) {
-            if(p.isAnnotationPresent(Provides.class)) {
-                for(Method m : methods) {
-                    if(m.isAnnotationPresent(Provides.) && m.getReturnType() == p.getType())
-                }
-            }
-        }
 
+        try {
+            return actualConstructor.newInstance(parameters);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    private Object[] constructParameters(Parameter[] parameters) {
+        return new Object[0];
     }
 }
 
