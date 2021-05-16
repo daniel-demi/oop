@@ -3,11 +3,17 @@ package OOP.Solution;
 import OOP.Provided.*;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import
 
 public class Injector {
     private final Map<Class<?>, Class<?>> classBindings;
@@ -45,15 +51,28 @@ public class Injector {
     }
 
     public Object construct(Class<?> clazz) throws MultipleInjectConstructorsException, NoConstructorFoundException, NoSuitableProviderFoundException, MultipleProvidersException, MultipleAnnotationOnParameterException {
-        Method[] methods = clazz.getMethods();
-        Method[] injectMethods = Arrays.stream(methods).filter((m)->m.isAnnotationPresent(@inject));
-        if(injectMethods.length > 1) throw new MultipleInjectConstructorsException();
-        if(injectMethods.length == 0) {
-            try {
-                Constructor<?> constructor = clazz.getConstructor();
-                return constructor.newInstance();
-            } catch (Exception e) {
-                throw new NoConstructorFoundException();
+        Class<?> actualClass = classBindings.get(clazz);
+        Constructor<?>[] constructors = actualClass.getConstructors();
+        Constructor<?> actualConstructor = null;
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.isAnnotationPresent(Inject.class)) {
+                if (actualConstructor != null && actualConstructor.isAnnotationPresent(Inject.class))
+                    throw new MultipleInjectConstructorsException();
+                actualConstructor = constructor;
+            } else {
+                if (constructor.getParameters().length == 0 && actualConstructor == null) {
+                    actualConstructor = constructor;
+                }
+            }
+        }
+        if(actualConstructor == null) throw new NoConstructorFoundException();
+        Parameter[] parameters = actualConstructor.getParameters();
+        Method[] methods = actualClass.getMethods();
+        for (Parameter p : parameters) {
+            if(p.isAnnotationPresent(Provides.class)) {
+                for(Method m : methods) {
+                    if(m.isAnnotationPresent(Provides.) && m.getReturnType() == p.getType())
+                }
             }
         }
 
