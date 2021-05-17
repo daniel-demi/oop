@@ -3,10 +3,7 @@ package OOP.Solution;
 import OOP.Provided.*;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -32,15 +29,33 @@ public class Injector {
         }
         if(c == null) throw new IllegalBindException();
         classBindings.put(clazz1, clazz2);
+        if(objectBindings.containsKey(clazz1)){
+            objectBindings.remove(clazz1);
+        }
+        if(supplierBindings.containsKey(clazz1)){
+            supplierBindings.remove(clazz1);
+        }
     }
 
     public void bindToInstance(Class<?> clazz, Object obj) throws IllegalBindException {
         if (!clazz.isInstance(obj)) throw new IllegalBindException();
         objectBindings.put(clazz, obj);
+        if(classBindings.containsKey(clazz)){
+            classBindings.remove(clazz);
+        }
+        if(supplierBindings.containsKey(clazz)){
+            supplierBindings.remove(clazz);
+        }
     }
 
     public void bindToSupplier(Class<?> clazz, Supplier<?> supplier) {
         supplierBindings.put(clazz, supplier);
+        if(classBindings.containsKey(clazz)){
+            classBindings.remove(clazz);
+        }
+        if(objectBindings.containsKey(clazz)){
+            objectBindings.remove(clazz);
+        }
     }
 
     public void bindByName(String s, Class<?> clazz) {
@@ -48,8 +63,21 @@ public class Injector {
     }
 
     public Object construct(Class<?> clazz) throws MultipleInjectConstructorsException, NoConstructorFoundException, NoSuitableProviderFoundException, MultipleProvidersException, MultipleAnnotationOnParameterException {
-        Class<?> actualClass = classBindings.get(clazz);
-        Constructor<?>[] constructors = actualClass.getConstructors();
+        Class<?> actualClass = clazz;
+        Constructor<?>[] constructors = null;
+        if(classBindings.containsKey(clazz)){
+            actualClass = classBindings.get(clazz);
+            if (classBindings.containsKey(actualClass)){
+                return construct(actualClass);
+            }
+            constructors = actualClass.getConstructors();
+        }
+        if(objectBindings.containsKey(actualClass)){
+            return objectBindings.get(actualClass);
+        }
+        if(supplierBindings.containsKey(actualClass)){
+            return supplierBindings.get(actualClass);
+        }
         Constructor<?> actualConstructor = null;
         for (Constructor<?> constructor : constructors) {
             if (constructor.isAnnotationPresent(Inject.class)) {
@@ -64,10 +92,22 @@ public class Injector {
         }
         if(actualConstructor == null) throw new NoConstructorFoundException();
         Object[] parameters = constructParameters(actualConstructor.getParameters());
-        Method[] methods = actualClass.getMethods();
+        Method[] methods = actualClass.getDeclaredMethods();
+        Field[] fields = actualClass.getDeclaredFields();
+        Arrays.stream(methods).filter(m -> m.isAnnotationPresent(Inject.class));
+        Arrays.stream(fields).filter(f -> f.isAnnotationPresent(Inject.class));
 
         try {
-            return actualConstructor.newInstance(parameters);
+            Object newObject = actualConstructor.newInstance(parameters);
+            for (Method m : methods){
+                m.setAccessible(true);
+                Object[] params = constructParameters(m.getParameters());
+                m.invoke(newObject,params);
+            }
+            for (Field f : fields){
+                f.setAccessible(true);
+                f.set(newObject, f.get(newObject));
+            }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
