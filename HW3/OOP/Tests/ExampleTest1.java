@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.junit.Assert.*;
 
-public class ExampleTest {
+public class ExampleTest1 {
 
     static class Superclazz {
     }

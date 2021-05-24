@@ -64,7 +64,7 @@ public class Injector {
         if(supplierBindings.containsKey(actualClass)){
             return supplierBindings.get(actualClass).get();
         }
-        Constructor<?>[] constructors = actualClass.getConstructors();
+        Constructor<?>[] constructors = actualClass.getDeclaredConstructors();
         Constructor<?> actualConstructor = null;
         for (Constructor<?> constructor : constructors) {
             if (constructor.isAnnotationPresent(Inject.class)) {
