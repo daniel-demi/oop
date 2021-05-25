@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ExampleTest {
+public class ExampleTest2 {
 
     static class Superclazz {
     }
@@ -420,10 +420,7 @@ public class ExampleTest {
         }
 
         public boolean isCorrect(){
-            if(x.x==0 && supy.getClass()==Subclazz.class && x.wasInjected && wasInjected){
-                return true;
-            }
-            return false;
+            return x.x == 0 && supy.getClass() == Subclazz.class && x.wasInjected && wasInjected;
         }
 
         @Inject

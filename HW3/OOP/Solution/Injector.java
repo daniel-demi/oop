@@ -113,8 +113,8 @@ public class Injector {
                 throw new MultipleAnnotationOnParameterException();
             } else {
                 if(p.isAnnotationPresent(Named.class)) {
-                    if(nameBindings.containsKey(p.getAnnotation(Named.class).name())) {
-                        paramInst.add(construct(nameBindings.get(p.getAnnotation(Named.class).name())));
+                    if(nameBindings.containsKey(p.getAnnotation(Named.class).value())) {
+                        paramInst.add(construct(nameBindings.get(p.getAnnotation(Named.class).value())));
                         continue;
                     }
                 }

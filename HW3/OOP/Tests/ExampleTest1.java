@@ -325,7 +325,7 @@ public class ExampleTest1 {
         }
 
         @Inject
-        AnyInteger(@Named(name = "Zero") AnyInteger other) {
+        AnyInteger(@Named("Zero") AnyInteger other) {
             this.x = other.x;
         }
     }
