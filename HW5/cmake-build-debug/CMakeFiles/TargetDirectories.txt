@@ -1,0 +1,3 @@
+C:/Users/ddemikho/OneDrive - Technion/technoin-homework/OOP/oop/HW5/cmake-build-debug/CMakeFiles/HW5.dir
+C:/Users/ddemikho/OneDrive - Technion/technoin-homework/OOP/oop/HW5/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/ddemikho/OneDrive - Technion/technoin-homework/OOP/oop/HW5/cmake-build-debug/CMakeFiles/rebuild_cache.dir

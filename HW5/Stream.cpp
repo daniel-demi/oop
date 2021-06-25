@@ -12,7 +12,7 @@ Stream<T>::Stream(std::function<T *()> function1) {
 template<class T>
 template<template<typename> class TContainer>
 Stream<T> Stream<T>::of(TContainer<T*> container) {
-    return Stream<T>([container]() {return container.begin();});
+    return Stream<T>([container]() {return container;});
 }
 
 template<class T>
