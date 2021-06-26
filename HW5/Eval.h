@@ -69,6 +69,29 @@ struct Factorial<0> {
     constexpr static int value = 1;
 };
 
+
+template<typename T, typename... TT>
+struct TypeList {
+    typedef T head;
+    typedef TypeList<TT...> tail;
+};
+
+template<typename... TT>
+struct TypeList<TypeList<TT...>> {
+    typedef TypeList<TT...> tail;
+};
+
+template<int N, typename T, typename... TT>
+struct SubList{
+    typedef TypeList<T, typename SubList<N-1, TT...>::sublist::head> sublist;
+};
+
+template<typename T, typename... TT>
+struct SubList<1, T, TT...>{
+    typedef TypeList<T> sublist;
+};
+
+
 template <class OP, class T, class U>
 struct Eval<OP, T, U> {
     static constexpr int first = Drop<Eval<OP>::drop_amount,Tuple<OP, T, U>>::first;
@@ -80,6 +103,7 @@ struct Eval<OP, T, U> {
                                  IF<SameType<OP,EQ>::result,Int<IF<first == sec, Int<1>, Int<0>>::value>,Int<0>>>>>>::value;
     static constexpr int drop_amount = Eval<OP>::drop_amount + Eval<T>::drop_amount + Eval<U>::drop_amount;
 };
+
 
 template <class ONEARG, class T>
 struct Eval<ONEARG, T> {
