@@ -11,72 +11,170 @@
 
 template<class T>
 class Stream {
-//    Stream() = delete;
 
-    explicit Stream(std::function<std::vector<T*>()>);
+
     std::function<std::vector<T*>()> lambda;
 public:
 
+    explicit Stream(std::function<std::vector<T*>()> function) {
+        lambda = function;
+    }
 
+    template<template<typename,typename> class TContainer, class U>
+    static Stream<T> of(TContainer<T*,U> container) {
 
-    template<template<typename> class TContainer>
-    static Stream<T> of(TContainer<T *>);
+        return Stream<T>([container]() {
+            auto myContainer = std::vector<T*>();
+            for (auto i : container) {
+                myContainer.push_back(i);
+            }
+            return myContainer;
+        });
+    }
 
     template<class S>
-    static Stream<T> of(std::map<S,T *>);
+    static Stream<T> of(std::map<S,T *> map) {
+        return Stream<T>([map]() {
+            auto values = std::vector<T*>();
+            for(auto i : map) {
+                values.push_back(i.second);
+            }
+            return values;});
+    }
 
-    //copy_if || remove_if
-    virtual Stream<T> filter(std::function<bool(const T *)>);
+    Stream<T> filter(std::function<bool(const T *)> pred) {
+        auto collection = lambda();
+        return Stream<T>([pred, collection]() {
+            auto newCollection = std::vector<T*>();
+        for(auto i : collection) {
+            if(pred(i)) {
+                newCollection.push_back(i);
+            }
+        }
+            return newCollection;
+        });
+    }
 
-    //transform
     template<class R>
-    Stream<R> map(std::function<R *(const T *)>);
+    Stream<R> map(std::function<R*(const T *)> mapFunc) {
+        auto collection = lambda();
+        return Stream<R>([mapFunc, collection](){
+            auto newCollection = std::vector<R*>();
+            for(auto i : collection) {
+                newCollection.push_back(mapFunc(i));
+            }
+            return newCollection;
+        });
+    }
 
-    //unique
-    Stream<T> distinct(std::function<bool(const T *, const T *)>);
+    Stream<T> distinct(std::function<bool(const T *, const T *)> cmp) {
+        auto collection = lambda();
+        return Stream<T>([cmp, collection](){
+            auto newCollection = std::vector<T*>();
+            std::unique_copy(collection.begin(), collection.end(), newCollection.begin(), cmp);
+            return newCollection;
+        });
+    }
 
-    Stream<T> distinct();
+    Stream<T> distinct() {
+        auto collection = lambda();
+        return Stream<T>([collection](){
+            auto newCollection = std::vector<T*>(collection.size());
+            auto it = std::unique_copy(collection.begin(), collection.end(), newCollection.begin(), [](const T* e1, const T* e2) -> bool {
+                return *e1 == *e2;
+            });
+            newCollection.resize(std::distance(newCollection.begin(), it));
+            return newCollection;
+        });
+    }
 
-    Stream<T> sorted();
+    Stream<T> sorted() {
+        auto collection = lambda();
+        return Stream<T>([collection]() {
+            auto newCollection = std::vector<T*>();
+            for(auto i : collection) {
+                newCollection.push_back(i);
+            }
+            std::sort(newCollection.begin(), newCollection.end(), []( T* e1,  T* e2) -> bool{
+                return *e1 < *e2;
+            });
+            return newCollection;
+        });
+    }
 
-    template<template<typename> class TContainer>
-    TContainer<T *> collect();
+    template<class TContainer>
+    TContainer collect() {
+        auto collection = lambda();
+        TContainer newCollection = TContainer(collection.size());
+        std::copy(collection.begin(), collection.end(), newCollection.begin());
+        return newCollection;
 
-    void forEach(std::function<void(T*)>);
+    }
 
-    T* reduce(T*, std::function<T*(const T*, const T*)>);
+    void forEach(std::function<void(T *)> action) {
+        auto collection = lambda();
+        std::for_each(collection.begin(), collection.end(), action);
+    }
 
-    T* min();
+    T* reduce(T * initial, std::function<T*(const T *, const T *)> redFunc) {
+        auto collection = lambda();
+        T* res = new T;
+        *res = *initial;
+        for (auto i : collection) {
+            T* temp = res;
+            res = redFunc(i, res);
+            delete temp;
+        }
+        return res;
+    }
 
-    T* max();
+    T* min() {
+        auto collection = lambda();
+        if(!collection.size()) return nullptr;
+        T* min = collection[0];
+        for (int i = 1; i < collection.size(); i++) {
+            if (*collection[i] < *min) {
+                min = collection[i];
+            }
+        }
+        return min;
+    }
 
-    int count();
+    T* max() {
+        auto collection = lambda();
+        if(!collection.size()) return nullptr;
+        T* max = collection[0];
+        for (int i = 1; i < collection.size(); i++) {
+            if (*collection[i] > *max) {
+                max = collection[i];
+            }
+        }
+        return max;
+    }
 
-    bool allMatch(std::function<bool(const T*)>);
+    int count() {
+        return lambda().size();
+    }
 
-    bool anyMatch(std::function<bool(const T*)>);
+    bool allMatch(std::function<bool(const T*)> pred) {
+        auto collection = lambda();
+        return std::all_of(collection.begin(), collection.end(), pred);
+    }
 
-    T* findFirst(std::function<bool(const T*)>);
+    bool anyMatch(std::function<bool(const T*)> pred) {
+        auto collection = lambda();
+        return std::any_of(collection.begin(), collection.end(), pred);
+    }
+
+    T* findFirst(std::function<bool(const T*)> pred) {
+        auto collection = lambda();
+        for(int i = 0; i < collection.size(); i++) {
+            if(pred(collection[i])) return collection[i];
+        }
+        return nullptr;
+    }
 };
 
-//template<class T>
-//class StreamFilter : public Stream<T> {
-//
-//
-//
-//    template<class U>
-//    explicit StreamFilter(Stream<U>);
-//
-//    Stream<T> filter(std::function<bool(const T*)>);
-//};
-// Example:
-// ========
-//... (pred) {
-//    return Stream([lambda]() -> TContainer {
-//        TContainer c = lambda();
-//        return std::copy_if(c.begin(), c.end(), pred);
-//
-//    });
-//}
+
 
 #endif //HW5_STREAM_H

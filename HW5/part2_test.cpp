@@ -42,8 +42,15 @@ int main() {
     assert(Stream<int>::of(vector).map<Cell<int>>([](const int* a) { return new Cell<int>(*a); }).distinct().count() == 9);
 
     int initial = 0;
-//    assert(*Stream<int>::of(vector).reduce(&initial, [](const int* a, const int* b) { auto * c = new int; *c = *a + *b; return c; }) == 47);
-
+    assert(*Stream<int>::of(vector).reduce(&initial, [](const int* a, const int* b) { auto * c = new int; *c = *a + *b; return c; }) == 47);
+    int arr2[10] = {8, 4, 9, 2, 7, 6, 3, 5, 10, 1};
+    std::vector<int*> vector2;
+    for(int i = 0 ; i < 10 ; i++) vector2.push_back(arr2 + i);
+    assert(*Stream<int>::of(vector2).min() == 1);
+    assert(*Stream<int>::of(vector2).max() == 10);
+    assert(Stream<int>::of(vector2).allMatch([](const int* x) -> bool {return *x > 0;}));
+    assert(Stream<int>::of(vector2).anyMatch([](const int* x) -> bool {return *x == 1;}));
+    assert(Stream<int>::of(vector2).findFirst([](const int* x) -> bool {return *x < 0;}) == nullptr);
     return 0;
 }
 

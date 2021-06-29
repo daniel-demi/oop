@@ -143,6 +143,17 @@ struct Eval<NOT, TT...> {
 };
 
 template <class ...TT>
+        // first COND cond: Int<1>, COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1
+        // first COND first: COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1 + 1 + 6 + 1 = + 9
+        //  second COND cond: Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1
+        //  second COND first: LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 2 + 2 + 1 + 1 = +6
+        // second COND first: LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 2 + 1 + 1
+        // second COND first: FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3>  + 1 + 1
+        //  second COND first: Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1
+        // second COND second: Int<2>, PLUS, Int<1>, Int<3> + 1
+        // first COND second: PLUS, Int<1>, Int<3> + 1 + 1 + 1= + 3
+        // PLUS first:  Int<1>, Int<3> +1
+        // PLUS second: Int<3> + 1
 struct Eval<COND, TT...> {
     static constexpr int cond = Eval<TT...>::value;
     static constexpr int first =Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::value;
