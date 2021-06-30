@@ -3,7 +3,6 @@
 
 #ifndef HW5_LISP_H
 #define HW5_LISP_H
-
 struct TOKEN {};
 struct LPAR : public TOKEN {};
 struct RPAR : TOKEN {};
@@ -21,12 +20,11 @@ struct NOT : public ONEARG {};
 struct FACT : public ONEARG {};
 
 
+
 template <int v>
 struct Int {
     static constexpr int value = v;
-    static constexpr int drop_amount = 1;
 };
-
 
 template<typename... TT>
 struct TypeList {
@@ -38,6 +36,71 @@ template<typename T, typename... TT>
 struct TypeList<T, TypeList<TT...>> {
     typedef TypeList<T,TT...> list;
 };
+
+//#define DEBUG
+#ifdef DEBUG
+
+template<class ...TT>
+struct StringValue {
+    static constexpr char* value = "nan";
+};
+
+template<class ...TT>
+struct StringValue<TypeList<TT...>> {
+    typedef StringValue<TT...> value;
+};
+
+template<class ...TT, int N>
+struct StringValue<Int<N>,TT...> {
+    static constexpr char* value = "Int";
+    static constexpr int num = N;
+};
+
+template<class ...TT>
+struct StringValue<COND,TT...> {
+    static constexpr char* value = "COND";
+};
+
+template<class ...TT>
+struct StringValue<EQ,TT...> {
+    static constexpr char* value = "EQ";
+};
+
+template<class ...TT>
+struct StringValue<PLUS,TT...> {
+    static constexpr char* value = "PLUS";
+};
+
+template<class ...TT>
+struct StringValue<MINUS,TT...> {
+    static constexpr char* value = "MINUS";
+};
+
+template<class ...TT>
+struct StringValue<MUL,TT...> {
+    static constexpr char* value = "MUL";
+};
+
+template<class ...TT>
+struct StringValue<DIV,TT...> {
+    static constexpr char* value = "DIV";
+};
+
+template<class ...TT>
+struct StringValue<FACT,TT...> {
+    static constexpr char* value = "FACT";
+};
+
+template<class ...TT>
+struct StringValue<NOT,TT...> {
+    static constexpr char* value = "NOT";
+};
+
+
+
+#endif
+
+
 
 template <typename, typename>
 struct SameType;
@@ -58,6 +121,11 @@ struct Drop{
 template <typename T,typename ... TT>
 struct Drop<1, T,TT...>{
     typedef TypeList<TT...> drop;
+};
+
+template <typename T, typename ... TT>
+struct Drop<0,T, TT...>{
+    typedef TypeList<T, TT...> drop;
 };
 
 template <bool g, typename T, typename E>
@@ -155,12 +223,15 @@ template <class ...TT>
         // PLUS first:  Int<1>, Int<3> +1
         // PLUS second: Int<3> + 1
 struct Eval<COND, TT...> {
-    static constexpr int cond = Eval<TT...>::value;
+    static constexpr int cond = Eval<TT...>::value; // 1
+//    static constexpr char* cond_str = StringValue<typename Drop<(Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::value;
     static constexpr int first =Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::value;
-    static constexpr int sec = Eval<typename Drop<(Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount), TT...>::drop>::value;
+    static constexpr int sec = Eval<typename Drop<((Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount)), TT...>::drop>::value;
     static constexpr int value = IF<cond != 0, Int<first>, Int<sec>>::value;
     static constexpr int drop_amount = 1 + Eval<TT...>::drop_amount + Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount +
-            Eval<typename Drop<Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount, TT...>::drop>::drop_amount;
+            Eval<typename Drop<((Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount)), TT...>::drop>::drop_amount;
+//    static constexpr int drop_amount = 1 + Eval<TT...>::drop_amount + Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount +
+//            Eval<typename Drop<Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount, TT...>::drop>::drop_amount;
 };
 
 

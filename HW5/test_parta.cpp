@@ -31,12 +31,12 @@ int main(){
     check(Eval<COND, Int<1>, COND, Int<1>, FACT, Int<4>, Int<2>, PLUS, Int<1>, Int<3>>::value, 24);
     check(Eval<COND, Int<1>, COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3>>::value, 24);
     // (cond 1 (cond 1 ((fact 4)) (2)) (+ 1 3))
-    check(Eval<COND, COND, Int<0>, Int<9>, LPAR, Int<1>, RPAR, COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, LPAR, Int<2>, RPAR, PLUS, Int<1>, Int<3>>::value, 24);    
+    check(Eval<COND, COND, Int<0>, Int<9>, LPAR, Int<1>, RPAR, COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, LPAR, Int<2>, RPAR, PLUS, Int<1>, Int<3>>::value, 24);
     //check number 9:
     check(Eval<COND, COND, Int<0>, Int<9>, LPAR, Int<1>, RPAR, Int<2>, Int<3>>::value, 2);
     check(Eval<COND, COND, Int<0>, Int<9>, Int<1>, Int<2>, Int<3>>::value, 2);
     check(Eval<
-        PLUS, 
+        PLUS,
             LPAR, COND,
                 COND,
                     Int<0>,
@@ -49,7 +49,7 @@ int main(){
                 PLUS, Int<1>, Int<3>,
             RPAR,
             Int<1>
-        >::value, 25);    
+        >::value, 25);
     //check number 12:
     check(Eval<FACT, LPAR, MINUS, LPAR, Int<5>, RPAR, LPAR, Int<2>, RPAR, RPAR>::value, 6);
     check(Eval<EQ, PLUS, Int<88>, Int<12>, Int<100>>::value, 1);
@@ -65,7 +65,8 @@ int main(){
     //check number 21:
     check(Eval<DIV, MUL, Int<9>, DIV, Int<19>, Int<2>, Int<4>>::value, 20);
     check(Eval<EQ, DIV, MUL, Int<9>, DIV, Int<19>, Int<2>, Int<4>, Int<19>>::value, 0);
-    check(Eval<LPAR, EQ, LPAR, LPAR, Int<18>, RPAR, Int<18>, RPAR, RPAR, RPAR>::value, 1);
+    check(Eval<LPAR, EQ, LPAR, Int<18>, RPAR, LPAR, Int<18>, RPAR, RPAR>::value, 1);
+    // (EQ (18) (18))
 
     cout << "passed all = ";
     printBool(passed_all);

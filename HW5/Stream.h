@@ -70,8 +70,12 @@ public:
     Stream<T> distinct(std::function<bool(const T *, const T *)> cmp) {
         auto collection = lambda();
         return Stream<T>([cmp, collection](){
-            auto newCollection = std::vector<T*>();
-            std::unique_copy(collection.begin(), collection.end(), newCollection.begin(), cmp);
+            if(collection.size() == 0) {
+                return std::vector<T*>();
+            }
+            auto newCollection = std::vector<T*>(collection.size());
+            auto it = std::unique_copy(collection.begin(), collection.end(), newCollection.begin(), cmp);
+            newCollection.resize(std::distance(newCollection.begin(), it));
             return newCollection;
         });
     }
@@ -79,6 +83,9 @@ public:
     Stream<T> distinct() {
         auto collection = lambda();
         return Stream<T>([collection](){
+            if(collection.size() == 0) {
+                return std::vector<T*>();
+            }
             auto newCollection = std::vector<T*>(collection.size());
             auto it = std::unique_copy(collection.begin(), collection.end(), newCollection.begin(), [](const T* e1, const T* e2) -> bool {
                 return *e1 == *e2;
@@ -92,6 +99,7 @@ public:
         auto collection = lambda();
         return Stream<T>([collection]() {
             auto newCollection = std::vector<T*>();
+            if(collection.size() == 0) return newCollection;
             for(auto i : collection) {
                 newCollection.push_back(i);
             }
@@ -105,14 +113,19 @@ public:
     template<class TContainer>
     TContainer collect() {
         auto collection = lambda();
-        TContainer newCollection = TContainer(collection.size());
-        std::copy(collection.begin(), collection.end(), newCollection.begin());
+        TContainer newCollection;
+        auto it = newCollection.begin();
+        for(auto i : collection) {
+//            it = newCollection.insert(it, i);
+            newCollection.insert(newCollection.end(), i);
+        }
         return newCollection;
 
     }
 
     void forEach(std::function<void(T *)> action) {
         auto collection = lambda();
+        if(collection.size() == 0) return;
         std::for_each(collection.begin(), collection.end(), action);
     }
 
@@ -158,11 +171,13 @@ public:
 
     bool allMatch(std::function<bool(const T*)> pred) {
         auto collection = lambda();
+        if(!collection.size()) return true;
         return std::all_of(collection.begin(), collection.end(), pred);
     }
 
     bool anyMatch(std::function<bool(const T*)> pred) {
         auto collection = lambda();
+        if(!collection.size()) return false;
         return std::any_of(collection.begin(), collection.end(), pred);
     }
 
