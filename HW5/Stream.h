@@ -116,7 +116,6 @@ public:
         TContainer newCollection;
         auto it = newCollection.begin();
         for(auto i : collection) {
-//            it = newCollection.insert(it, i);
             newCollection.insert(newCollection.end(), i);
         }
         return newCollection;
@@ -133,9 +132,7 @@ public:
         auto collection = lambda();
         T* res = initial;
         for (auto i : collection) {
-            T* temp = res;
-            res = redFunc(i, res);
-            delete temp;
+            res = redFunc(res, i);
         }
         return res;
     }

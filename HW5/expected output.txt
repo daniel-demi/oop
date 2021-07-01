@@ -1,0 +1,33 @@
+1
+2
+2
+3
+4
+6
+5
+7
+8
+9
+hi
+my
+name
+is
+mr
+robot
+Employee: Mr robot
+the min is: Employee: Darlin
+the max is: Employee: Mr robot
+Employee: Elliot
+Employee: Darlin
+Employee: Mr robot
+Employee: Angella
+Employee: Tairel
+1
+4
+7
+9
+32
+34
+35
+38
+48

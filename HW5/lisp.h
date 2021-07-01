@@ -37,70 +37,6 @@ struct TypeList<T, TypeList<TT...>> {
     typedef TypeList<T,TT...> list;
 };
 
-//#define DEBUG
-#ifdef DEBUG
-
-template<class ...TT>
-struct StringValue {
-    static constexpr char* value = "nan";
-};
-
-template<class ...TT>
-struct StringValue<TypeList<TT...>> {
-    typedef StringValue<TT...> value;
-};
-
-template<class ...TT, int N>
-struct StringValue<Int<N>,TT...> {
-    static constexpr char* value = "Int";
-    static constexpr int num = N;
-};
-
-template<class ...TT>
-struct StringValue<COND,TT...> {
-    static constexpr char* value = "COND";
-};
-
-template<class ...TT>
-struct StringValue<EQ,TT...> {
-    static constexpr char* value = "EQ";
-};
-
-template<class ...TT>
-struct StringValue<PLUS,TT...> {
-    static constexpr char* value = "PLUS";
-};
-
-template<class ...TT>
-struct StringValue<MINUS,TT...> {
-    static constexpr char* value = "MINUS";
-};
-
-template<class ...TT>
-struct StringValue<MUL,TT...> {
-    static constexpr char* value = "MUL";
-};
-
-template<class ...TT>
-struct StringValue<DIV,TT...> {
-    static constexpr char* value = "DIV";
-};
-
-template<class ...TT>
-struct StringValue<FACT,TT...> {
-    static constexpr char* value = "FACT";
-};
-
-template<class ...TT>
-struct StringValue<NOT,TT...> {
-    static constexpr char* value = "NOT";
-};
-
-
-
-#endif
-
-
 
 template <typename, typename>
 struct SameType;
@@ -211,27 +147,13 @@ struct Eval<NOT, TT...> {
 };
 
 template <class ...TT>
-        // first COND cond: Int<1>, COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1
-        // first COND first: COND, Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1 + 1 + 6 + 1 = + 9
-        //  second COND cond: Int<1>, LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1
-        //  second COND first: LPAR, LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 2 + 2 + 1 + 1 = +6
-        // second COND first: LPAR, FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 2 + 1 + 1
-        // second COND first: FACT, Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3>  + 1 + 1
-        //  second COND first: Int<4>, RPAR, RPAR, Int<2>, PLUS, Int<1>, Int<3> + 1
-        // second COND second: Int<2>, PLUS, Int<1>, Int<3> + 1
-        // first COND second: PLUS, Int<1>, Int<3> + 1 + 1 + 1= + 3
-        // PLUS first:  Int<1>, Int<3> +1
-        // PLUS second: Int<3> + 1
 struct Eval<COND, TT...> {
-    static constexpr int cond = Eval<TT...>::value; // 1
-//    static constexpr char* cond_str = StringValue<typename Drop<(Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::value;
+    static constexpr int cond = Eval<TT...>::value; 
     static constexpr int first =Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::value;
     static constexpr int sec = Eval<typename Drop<((Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount)), TT...>::drop>::value;
     static constexpr int value = IF<cond != 0, Int<first>, Int<sec>>::value;
     static constexpr int drop_amount = 1 + Eval<TT...>::drop_amount + Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount +
             Eval<typename Drop<((Eval<TT...>::drop_amount) + (Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount)), TT...>::drop>::drop_amount;
-//    static constexpr int drop_amount = 1 + Eval<TT...>::drop_amount + Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount +
-//            Eval<typename Drop<Eval<typename Drop<Eval<TT...>::drop_amount,TT...>::drop>::drop_amount, TT...>::drop>::drop_amount;
 };
 
 
