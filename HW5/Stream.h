@@ -131,8 +131,7 @@ public:
 
     T* reduce(T * initial, std::function<T*(const T *, const T *)> redFunc) {
         auto collection = lambda();
-        T* res = new T;
-        *res = *initial;
+        T* res = initial;
         for (auto i : collection) {
             T* temp = res;
             res = redFunc(i, res);
@@ -158,7 +157,7 @@ public:
         if(!collection.size()) return nullptr;
         T* max = collection[0];
         for (int i = 1; i < collection.size(); i++) {
-            if (*collection[i] > *max) {
+            if (*max < *collection[i]) {
                 max = collection[i];
             }
         }
